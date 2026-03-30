@@ -1,5 +1,7 @@
 # Round 1 Plan
 
+This note has been promoted into root `PLAN.md`. Keep `PLAN.md` as the current self-contained plan; use this file as supporting detail only if needed.
+
 ## What Is Actually Established
 
 - Public baseline:

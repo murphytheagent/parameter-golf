@@ -1,6 +1,8 @@
 # Parameter Golf Tracker
 
-Last updated: 2026-03-30 09:39 UTC
+Last updated: 2026-03-30 10:20 UTC
+
+For the self-contained research and implementation plan, read `PLAN.md`. This file is the compact state-of-record and run ledger.
 
 ## State Of Record
 

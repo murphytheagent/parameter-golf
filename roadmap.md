@@ -1,10 +1,11 @@
 # Parameter Golf Roadmap
 
-Last updated: 2026-03-30 09:31 UTC
+Last updated: 2026-03-30 09:39 UTC
 
 ## Current Status
 
 - Proved:
+  - A root `TRACKER.md` now exists and is the single-entry state-of-record for proved vs unproved status, exact next runs, and the experiment ledger.
   - The public 10-minute baseline is the `9 x 512`, tied-embedding, Muon-trained GPT at `final_int8_zlib_roundtrip_exact val_bpb:1.22436570` and total submission size `15,863,489` bytes.
   - The current upstream-root `train_gpt.py` is still small enough to leave code-budget headroom: `47,642` bytes and `1,126` lines.
   - Athena's ranking for this exact challenge stayed stable across the successful retries: `1)` shared-depth recurrence / aggressive tying, `2)` bounded test-time adaptation or streaming memory, `3)` `MTP-lite`, with `MQA/GQA` as a cheap supporting sweep and deeper MLA / latent-KV behind that.
@@ -28,6 +29,7 @@ Activity log:
 - 2026-03-19 19:16 UTC: Athena deep consult succeeded after earlier timeouts and reordered the model-side ranking toward shared-depth recurrence first and `MTP-lite` ahead of MLA / latent-KV. Full consult log: `.agent/runtime/consult_history/1773871418.194959.jsonl`.
 - 2026-03-22 00:47 UTC: Athena deep consult on Kimi Attention Residuals said not to promote AttnRes or Block AttnRes into round one ahead of recurrence or `MTP-lite`; only the tiny depth-mix idea is worth stealing later. Full consult log: `.agent/runtime/consult_history/1773871418.194959.jsonl`.
 - 2026-03-30 09:31 UTC: Restored the missing project tracker after confirming that the earlier docs and implementation commits are absent from the current fork. Rechecked the remote execution surface: node blocked by job `1892` through `2026-04-01 02:29 UTC`; `/data/scratch/murphy` exists; `/data/users/murphy` and a ready-made FineWeb SP1024 cache/checkpoint surface do not currently exist.
+- 2026-03-30 09:39 UTC: Added a root `TRACKER.md` so the next session no longer has to reconstruct the state from `roadmap.md`, `backlog.md`, and `docs/round1-plan.md`. The tracker now carries the proved vs unproved ledger, the exact baseline-plus-recurrence handoff, and the pending experiment table.
 
 ## Milestone 2 - Reproduce The Published Baseline In Our Environment
 

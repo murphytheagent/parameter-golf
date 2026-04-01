@@ -1,6 +1,6 @@
 # Parameter Golf Plan
 
-Last updated: 2026-03-30 10:20 UTC
+Last updated: 2026-04-01 11:18 UTC
 
 ## Objective
 
@@ -51,10 +51,10 @@ Supporting notes:
 - No recurrence run exists yet from the current surviving fork state
 - No `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run exists yet from the current surviving fork state
 - The remote substrate is not warm:
-  - on `2026-03-30 09:17 UTC`, the node was occupied by Slurm job `1892` (`flashvla`, user `zekaili`) with projected end `2026-04-01 02:29 UTC`
-  - `/data/scratch/murphy` exists
+  - on `2026-04-01 11:05 UTC`, `wth-gpu-01` was `mixed`, not fully blocked, with only `zhijianliu`'s 1-GPU job `1942` scheduled through `2026-04-01 14:27 UTC`
+  - `/data/scratch/murphy` exists and `/data/scratch/murphy/cache` exists
   - `/data/users/murphy` does not exist
-  - no ready Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer cache was visible under the checked Murphy paths
+  - no ready Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer cache was visible under the checked Murphy paths (`/data/scratch/murphy/parameter-golf` and `/data/scratch/murphy/projects/parameter-golf` were both absent)
 
 ## Why Recurrence Is First
 
@@ -158,4 +158,4 @@ For every run, record the following in one place:
 
 ## Current Blocker
 
-There is still no honest performance claim beyond the public baseline because the node is blocked and the remote substrate is not staged yet. The next executable step, once the node is free, is baseline reproduction first, not model editing first.
+There is still no honest performance claim beyond the public baseline because the remote substrate is not staged yet. The old full-node blocker note is no longer current: the node is partially free now, but only `7 / 8` GPUs are available and there is still no ready checkout/data surface for Murphy under `/data/scratch`. The next executable step, once the substrate is materialized and the full 8-GPU window is real, is baseline reproduction first, not model editing first.

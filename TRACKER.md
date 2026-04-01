@@ -1,6 +1,6 @@
 # Parameter Golf Tracker
 
-Last updated: 2026-03-30 10:20 UTC
+Last updated: 2026-04-01 11:18 UTC
 
 For the self-contained research and implementation plan, read `PLAN.md`. This file is the compact state-of-record and run ledger.
 
@@ -31,10 +31,10 @@ For the self-contained research and implementation plan, read `PLAN.md`. This fi
 - No reproduced local baseline exists yet from the current surviving fork state.
 - No recurrence, `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run has been executed from the current fork state.
 - The remote substrate is not warm:
-  - on `2026-03-30 09:17 UTC`, the node was occupied by Slurm job `1892` (`flashvla`, user `zekaili`) with projected end `2026-04-01 02:29 UTC`
-  - `/data/scratch/murphy` exists
+  - on `2026-04-01 11:05 UTC`, `wth-gpu-01` was `mixed`, not fully blocked, with only `zhijianliu`'s 1-GPU job `1942` scheduled through `2026-04-01 14:27 UTC`
+  - `/data/scratch/murphy` exists and `/data/scratch/murphy/cache` exists
   - `/data/users/murphy` does not exist
-  - no ready Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer cache was visible under the checked Murphy paths
+  - no ready Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer cache was visible under the checked Murphy paths (`/data/scratch/murphy/parameter-golf` and `/data/scratch/murphy/projects/parameter-golf` were both absent)
 
 ## Exact Next Execution Path
 

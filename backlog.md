@@ -2,7 +2,7 @@
 
 ## Immediate
 
-- Keep `PLAN.md` and `TRACKER.md` synced whenever the baseline anchor, experiment verdicts, or branch ordering changes.
+- Keep `PLAN.md`, the PDF render in `outputs/plan_report/`, and `TRACKER.md` synced whenever the baseline anchor, experiment verdicts, or branch ordering changes.
 - Materialize the remote run surface under `/data/scratch/murphy/parameter-golf` instead of `$HOME`.
 - Route `HF_HOME`, hub, transformers, torch, and `XDG_CACHE_HOME` to `/data/scratch/murphy/cache`.
 - Download or copy the `fineweb10B_sp1024` dataset and `fineweb_1024_bpe.model` onto the remote data volume.

@@ -1,21 +1,23 @@
 # Parameter Golf Roadmap
 
-Last updated: 2026-03-30 10:20 UTC
+Last updated: 2026-04-02 23:09 UTC
 
 ## Current Status
 
 - Proved:
   - A root `PLAN.md` now exists as the self-contained research and implementation plan, so the main plan no longer lives only in `docs/round1-plan.md` or in thread history.
+  - A collaborator-facing PDF render now exists at `outputs/plan_report/parameter_golf_plan.pdf`, so the shareable plan surface is back in the repo instead of living only as an old Slack attachment.
   - A root `TRACKER.md` now exists and is the single-entry state-of-record for proved vs unproved status, exact next runs, and the experiment ledger.
   - The public 10-minute baseline is the `9 x 512`, tied-embedding, Muon-trained GPT at `final_int8_zlib_roundtrip_exact val_bpb:1.22436570` and total submission size `15,863,489` bytes.
   - The current upstream-root `train_gpt.py` is still small enough to leave code-budget headroom: `47,642` bytes and `1,126` lines.
   - Athena's ranking for this exact challenge stayed stable across the successful retries: `1)` shared-depth recurrence / aggressive tying, `2)` bounded test-time adaptation or streaming memory, `3)` `MTP-lite`, with `MQA/GQA` as a cheap supporting sweep and deeper MLA / latent-KV behind that.
   - Athena's later AttnRes check did not promote Kimi Attention Residuals into round one. The recommendation remained: recurrence first, `MTP-lite` second, AttnRes only as a later falsification branch.
+  - The current exporter still keeps float tensors with `<= 65,536` elements in fp16 passthrough, so naive stored low-rank factorization is still a weak byte-saving story here.
   - The fork checkout is healthy again: `projects/parameter-golf` is a clean repo on `main` at `0c0ea98`, with only untracked local outputs left behind.
 - Unproved:
   - None of the earlier project-local tracker docs or first-wave implementation commits survived in this checkout. The current fork contains only the challenge code plus `outputs/literature/2026-03-16-kimi-attention-residuals.pdf`.
   - No recurrence, `MTP-lite`, AttnRes-lite, or bounded test-time adaptation experiment has actually been run from this surviving fork state.
-  - The remote substrate is not warm: on 2026-03-30 09:17 UTC the node was occupied by `zekaili`'s Slurm job `1892` until `2026-04-01 02:29 UTC`, and no Murphy-owned Parameter Golf checkout or FineWeb SP1024 dataset was visible under the expected remote project/data paths.
+  - The remote substrate is still not warm: on `2026-04-02 23:01 UTC`, jobs `1960`, `1965`, and `1967` occupied `6 / 8` GPUs on `wth-gpu-01`, and no Murphy-owned Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer surface was visible under the expected scratch paths.
 
 ## Milestone 1 - Restore Tracker And Remote Substrate
 
@@ -32,6 +34,7 @@ Activity log:
 - 2026-03-30 09:31 UTC: Restored the missing project tracker after confirming that the earlier docs and implementation commits are absent from the current fork. Rechecked the remote execution surface: node blocked by job `1892` through `2026-04-01 02:29 UTC`; `/data/scratch/murphy` exists; `/data/users/murphy` and a ready-made FineWeb SP1024 cache/checkpoint surface do not currently exist.
 - 2026-03-30 09:39 UTC: Added a root `TRACKER.md` so the next session no longer has to reconstruct the state from `roadmap.md`, `backlog.md`, and `docs/round1-plan.md`. The tracker now carries the proved vs unproved ledger, the exact baseline-plus-recurrence handoff, and the pending experiment table.
 - 2026-03-30 10:20 UTC: Promoted the self-contained round-one plan into root `PLAN.md` after the collaborator clarified that the intended deliverable was the narrative plan file itself, not the compact tracker.
+- 2026-04-02 23:09 UTC: Rebuilt the collaborator-facing plan surface as `outputs/plan_report/parameter_golf_plan.pdf`, verified the render, and refreshed the blocker note with a live remote recheck. Current state: jobs `1960` (`1` GPU), `1965` (`1` GPU), and `1967` (`4` GPUs) still block the required `8`-GPU launch, while `/data/scratch/murphy` exists but no Murphy-owned Parameter Golf checkout or SP1024 dataset/tokenizer surface is materialized there yet.
 
 ## Milestone 2 - Reproduce The Published Baseline In Our Environment
 

@@ -1,6 +1,6 @@
 # Round 1 Plan
 
-This note has been promoted into root `PLAN.md`. Keep `PLAN.md` as the current self-contained plan; use this file as supporting detail only if needed.
+This note has been promoted into root `PLAN.md` and the rendered PDF at `../outputs/plan_report/parameter_golf_plan.pdf`. Keep `PLAN.md` as the current self-contained plan; use this file as supporting detail only if needed.
 
 ## What Is Actually Established
 

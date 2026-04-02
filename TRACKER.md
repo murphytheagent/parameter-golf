@@ -1,8 +1,8 @@
 # Parameter Golf Tracker
 
-Last updated: 2026-04-01 11:18 UTC
+Last updated: 2026-04-02 23:09 UTC
 
-For the self-contained research and implementation plan, read `PLAN.md`. This file is the compact state-of-record and run ledger.
+For the self-contained research and implementation plan, read `PLAN.md`. The collaborator-facing PDF render lives under `outputs/plan_report/parameter_golf_plan.pdf`. This file is the compact state-of-record and run ledger.
 
 ## State Of Record
 
@@ -22,6 +22,7 @@ For the self-contained research and implementation plan, read `PLAN.md`. This fi
   - `3)` `MTP-lite`
   - `MQA/GQA` is a cheap supporting sweep
   - deeper MLA / latent-KV and stored low-rank factorization stay behind that under the current exporter
+  - small float tensors with `<= 65,536` elements stay in fp16 passthrough under the current int8 export path, so naive stored low-rank compression is not obviously byte-positive here
 - AttnRes verdict:
   - do not move full Kimi Attention Residuals or Block AttnRes ahead of recurrence or `MTP-lite`
   - if the idea gets touched later, only steal a tiny depth-mix component
@@ -31,10 +32,10 @@ For the self-contained research and implementation plan, read `PLAN.md`. This fi
 - No reproduced local baseline exists yet from the current surviving fork state.
 - No recurrence, `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run has been executed from the current fork state.
 - The remote substrate is not warm:
-  - on `2026-04-01 11:05 UTC`, `wth-gpu-01` was `mixed`, not fully blocked, with only `zhijianliu`'s 1-GPU job `1942` scheduled through `2026-04-01 14:27 UTC`
+  - on `2026-04-02 23:01 UTC`, `wth-gpu-01` had jobs `1960`, `1965`, and `1967` using `6 / 8` GPUs total, so the required `8`-GPU baseline still could not launch
   - `/data/scratch/murphy` exists and `/data/scratch/murphy/cache` exists
-  - `/data/users/murphy` does not exist
-  - no ready Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer cache was visible under the checked Murphy paths (`/data/scratch/murphy/parameter-golf` and `/data/scratch/murphy/projects/parameter-golf` were both absent)
+  - `/data/scratch/murphy/parameter-golf`, `/data/scratch/murphy/projects/parameter-golf`, and `/data/users/murphy` were absent in the current recheck
+  - a shallow scan under `/data/scratch/murphy` did not find `fineweb10B_sp1024` or `fineweb_1024_bpe.model`
 
 ## Exact Next Execution Path
 

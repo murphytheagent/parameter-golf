@@ -4,6 +4,7 @@ Local fork for OpenAI's 16 MB / 10-minute Parameter Golf challenge. Current focu
 
 ## Key Docs
 - `PLAN.md` — self-contained research and implementation plan; read this first
+- `outputs/plan_report/parameter_golf_plan.pdf` — shareable PDF render of the current plan surface
 - `TRACKER.md` — compact progress and experiment tracker
 - `roadmap.md` — current status, milestones, activity log, stage gates
 - `backlog.md` — open tasks and pending experiment/setup work

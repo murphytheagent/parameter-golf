@@ -1,0 +1,254 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+\definecolor{PlanBlue}{HTML}{143A5C}
+\definecolor{PlanGray}{HTML}{4A5560}
+\definecolor{PlanLite}{HTML}{EEF3F7}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=PlanBlue,
+    urlcolor=PlanBlue
+}
+
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textcolor{PlanGray}{Parameter Golf}}
+\rhead{\textcolor{PlanGray}{2026-04-02}}
+\cfoot{\textcolor{PlanGray}{\thepage}}
+
+\setlist[itemize]{leftmargin=1.4em, itemsep=0.35em, topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=0.4em, topsep=0.35em}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\begin{document}
+
+{\Large\bfseries\textcolor{PlanBlue}{Parameter Golf Research and Execution Plan}}
+
+{\large Self-contained plan surface for the current fork state}
+
+\textbf{Last updated:} 2026-04-02 23:09 UTC
+
+\vspace{0.6em}
+\noindent
+\colorbox{PlanLite}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+        \textbf{Current read.}
+        The research ranking is stable, but the project is still blocked on execution substrate rather than model ideation.
+        Shared-depth recurrence remains the first serious branch, bounded test-time adaptation stays live but not first, and \texttt{MTP-lite} stays ahead of MLA / latent-KV.
+        What is still missing is an honest local anchor from the surviving fork state and a real 8-GPU run surface on the node.
+    }%
+}
+
+\section*{1. Challenge Object}
+
+Beat the current held-out FineWeb baseline under the actual challenge contract:
+
+\begin{itemize}
+    \item fixed FineWeb validation objective, reported as final quantized \texttt{val\_bpb}
+    \item strict submission cap: less than \texttt{16,000,000} bytes for code plus compressed weights
+    \item strict training budget: \texttt{600} seconds on \texttt{8} GPUs
+    \item no upstream PR yet; work stays in the local fork until a real improvement exists
+\end{itemize}
+
+\section*{2. State Of Record}
+
+\subsection*{What is established}
+
+\begin{itemize}
+    \item \textbf{Public 10-minute baseline.}
+    Architecture \texttt{9 x 512}, tied embeddings, \texttt{8} query heads, \texttt{4} KV heads, \texttt{MLP\_MULT=2}.
+    Final quantized metric: \texttt{final\_int8\_zlib\_roundtrip\_exact val\_bpb:1.22436570}.
+    Total submission size: \texttt{15,863,489} bytes.
+    \item \textbf{Unlimited-compute reference.}
+    The same stem reaches \texttt{1.20737944} after \texttt{4} hours, so the tokenizer and evaluation object still leave real headroom.
+    \item \textbf{Athena-backed family ordering for this repo.}
+    \begin{enumerate}
+        \item shared-depth recurrence / aggressive parameter tying
+        \item bounded test-time adaptation or streaming memory
+        \item \texttt{MTP-lite}
+    \end{enumerate}
+    \item \textbf{Supporting branch order.}
+    Cheap \texttt{MQA/GQA} sweeps remain useful, but they are not the first branch. Muon should stay unless the new architecture becomes unstable.
+    \item \textbf{Exporter caveat.}
+    Small float tensors with at most \texttt{65,536} elements stay in fp16 passthrough under the current int8 export path, so naive stored low-rank factorization is not obviously byte-positive here.
+    \item \textbf{AttnRes verdict.}
+    Full Kimi Attention Residuals or Block AttnRes should not move ahead of recurrence or \texttt{MTP-lite}. If anything is borrowed later, it should only be a tiny depth-mix component.
+\end{itemize}
+
+\subsection*{What is not established}
+
+\begin{itemize}
+    \item No reproduced local baseline exists yet from the current surviving fork state.
+    \item No recurrence, \texttt{MTP-lite}, AttnRes-lite, or bounded test-time adaptation run exists yet from the current surviving fork state.
+    \item No Murphy-owned remote Parameter Golf checkout or FineWeb SP1024 substrate is staged under the expected scratch paths.
+\end{itemize}
+
+\section*{3. Why Recurrence Is First}
+
+\begin{itemize}
+    \item The byte cap rewards effective depth per stored weight more directly than larger attention-side mechanisms.
+    \item The current exporter and baseline stem are already stable, so recurrence attacks the main depth-per-byte bottleneck without first changing the evaluation story.
+    \item \texttt{MTP-lite} is still attractive, but it is cleaner to decide whether it helps after one architectural stem is established.
+    \item Bounded test-time adaptation remains live, but it is harder to keep challenge-legible and should not be the first implementation line.
+    \item Full AttnRes is too large a conceptual jump for round one relative to what the baseline already gets from its existing residual mixing.
+\end{itemize}
+
+\section*{4. One Clean Execution Path}
+
+\subsection*{Step 1: warm the remote substrate}
+
+\begin{itemize}
+    \item Use \texttt{/data/scratch/murphy/parameter-golf} as the working directory.
+    \item Route all framework caches to \texttt{/data/scratch/murphy/cache}.
+    \item Materialize the \texttt{fineweb10B\_sp1024} dataset and \texttt{fineweb\_1024\_bpe.model} on the same data volume.
+\end{itemize}
+
+\subsection*{Step 2: reproduce the published baseline in our environment}
+
+Purpose:
+
+\begin{itemize}
+    \item establish the real local comparison anchor before changing the model
+    \item verify logging, byte accounting, and artifact capture
+\end{itemize}
+
+Pinned command shape:
+
+\begin{verbatim}
+NCCL_IB_DISABLE=1 \
+RUN_ID=baseline_sp1024_localcheck \
+DATA_PATH=<remote fineweb10B_sp1024 path> \
+TOKENIZER_PATH=<remote fineweb_1024_bpe.model path> \
+VOCAB_SIZE=1024 \
+MAX_WALLCLOCK_SECONDS=600 \
+TRAIN_LOG_EVERY=50 \
+VAL_LOSS_EVERY=200 \
+torchrun --standalone --nproc_per_node=8 train_gpt.py
+\end{verbatim}
+
+Acceptance rule:
+
+\begin{itemize}
+    \item if the reproduced run lands within about \texttt{+-0.005} \texttt{val\_bpb} of \texttt{1.22436570} and stays under the byte cap, it becomes the local anchor
+\end{itemize}
+
+\subsection*{Step 3: make exactly one first code change}
+
+\begin{itemize}
+    \item Add a smaller set of unique blocks and repeat them to recover effective depth.
+    \item Keep exporter logic, tokenizer, dataset, Muon path, and evaluation path unchanged.
+    \item Keep repeat-specific parameters tiny: repeat-indexed \texttt{resid\_mix}, \texttt{attn\_scale}, \texttt{mlp\_scale}, and only any additional skip-mix coefficients that prove necessary.
+    \item Do not mix in \texttt{MTP-lite}, test-time adaptation, or full AttnRes in the first recurrence commit.
+\end{itemize}
+
+\subsection*{Step 4: run the first recurrence sweep}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l l Y@{}}
+\toprule
+\textbf{Run ID} & \textbf{Family} & \textbf{Purpose} \\
+\midrule
+\texttt{baseline\_9x512\_kv4\_mlp2} & baseline & reproduce the local anchor under the exact \texttt{600s} / \texttt{<16 MB} contract \\
+\texttt{rec\_u3\_r3\_d512\_kv4\_mlp2} & recurrence & cheapest recurrence test against baseline width \\
+\texttt{rec\_u3\_r3\_d576\_kv4\_mlp2} & recurrence & test whether width reallocation helps under the same cap \\
+\texttt{rec\_u3\_r3\_d640\_kv4\_mlp2} & recurrence & push the depth-per-byte line closer to the cap \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Interpretation:
+
+\begin{itemize}
+    \item \texttt{u3}: \texttt{3} unique blocks
+    \item \texttt{r3}: \texttt{3} repeats
+    \item widths \texttt{512 / 576 / 640} test whether width reallocation helps recurrence under the same byte ceiling
+\end{itemize}
+
+\subsection*{Step 5: decide the next family with a hard rule}
+
+\begin{itemize}
+    \item \textbf{Positive.} If any recurrence run beats the local baseline by at least \texttt{0.002} quantized \texttt{val\_bpb}, recurrence stays live.
+    \item \textbf{Negative.} If all recurrence runs lose by at least \texttt{0.010}, recurrence is dead for now and the next budget goes to \texttt{MTP-lite}.
+    \item \textbf{Ambiguous.} If recurrence is neutral but stable, keep one recurrence anchor and run exactly one cheap \texttt{KV4 -> KV2} reallocation test before switching families.
+\end{itemize}
+
+\section*{5. What Comes After The Recurrence Verdict}
+
+\begin{enumerate}
+    \item cheap \texttt{KV4 -> KV2} sweep on the best stable recurrence anchor if recurrence is neutral
+    \item \texttt{MTP-lite} on the winning stem, or on the baseline stem if recurrence fails cleanly
+    \item bounded test-time adaptation or streaming memory only if training-side changes stall
+    \item AttnRes-lite only as a later falsification branch for depth-state mixing
+\end{enumerate}
+
+\section*{6. Run Recording Contract}
+
+For every run, record the following in one place:
+
+\begin{itemize}
+    \item \texttt{run\_id}
+    \item \texttt{git\_rev}
+    \item exact model shape
+    \item recurrence knobs or auxiliary-head knobs
+    \item \texttt{code\_bytes}
+    \item \texttt{quantized\_model\_bytes}
+    \item \texttt{total\_submission\_bytes}
+    \item final quantized \texttt{val\_bpb}
+    \item \texttt{step\_count}
+    \item \texttt{step\_avg\_ms}
+    \item \texttt{peak\_memory}
+    \item divergence, NaNs, scheduler interference, or suspicious seed sensitivity
+\end{itemize}
+
+\section*{7. Actual Blocker As Of 2026-04-02 23:01 UTC}
+
+\begin{itemize}
+    \item The old ``job 1892 blocks everything'' note is obsolete.
+    \item \texttt{wth-gpu-01} currently has three live jobs:
+    \begin{itemize}
+        \item job \texttt{1960}, user \texttt{zhijianliu}, \texttt{1} GPU
+        \item job \texttt{1965}, user \texttt{zhijianliu}, \texttt{1} GPU
+        \item job \texttt{1967}, user \texttt{zekaili}, \texttt{4} GPUs
+    \end{itemize}
+    \item That means \texttt{6 / 8} GPUs are occupied, so the required 8-GPU baseline cannot start yet even though the node is no longer fully monopolized by one job.
+    \item \texttt{/data/scratch/murphy} and \texttt{/data/scratch/murphy/cache} exist.
+    \item The expected project paths were absent in the current recheck:
+    \begin{itemize}
+        \item \texttt{/data/scratch/murphy/parameter-golf}
+        \item \texttt{/data/scratch/murphy/projects/parameter-golf}
+        \item \texttt{/data/users/murphy}
+    \end{itemize}
+    \item A shallow scan under \texttt{/data/scratch/murphy} did not find the SP1024 dataset or tokenizer file.
+    \item So the real blocker is now two-part:
+    \begin{enumerate}
+        \item the 8-GPU window is still not open
+        \item the remote checkout and data surface are still not materialized
+    \end{enumerate}
+\end{itemize}
+
+\vspace{0.4em}
+\noindent
+\colorbox{PlanLite}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+        \textbf{Exact next action.}
+        Once the remote checkout and SP1024 data are staged and a true 8-GPU window exists, reproduce the baseline first.
+        Do not spend the first round on model edits before that anchor exists.
+    }%
+}
+
+\end{document}

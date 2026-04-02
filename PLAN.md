@@ -1,6 +1,6 @@
 # Parameter Golf Plan
 
-Last updated: 2026-04-01 11:18 UTC
+Last updated: 2026-04-02 23:09 UTC
 
 ## Objective
 
@@ -11,7 +11,7 @@ Beat the current held-out FineWeb baseline under the actual challenge contract:
 - strict training budget: `600` seconds on `8` GPUs
 - no upstream PR yet; work stays in the local fork until there is a result worth publishing
 
-This file is the self-contained research and implementation plan for the current fork state. `TRACKER.md` is the compact run ledger and stage-gate file.
+This file is the self-contained research and implementation plan for the current fork state. `TRACKER.md` is the compact run ledger and stage-gate file. A collaborator-facing PDF render of this plan lives under `outputs/plan_report/parameter_golf_plan.pdf`.
 
 ## What Is Established
 
@@ -39,6 +39,7 @@ Supporting notes:
 - `MQA/GQA` is a cheap supporting sweep, not the primary first branch
 - deeper MLA / latent-KV is lower priority under the current exporter
 - stored low-rank factorization is not attractive under the current tensor serialization behavior
+- small float tensors with `<= 65,536` elements stay in fp16 passthrough under the current int8 export path, which weakens naive stored low-rank compression ideas
 
 ### AttnRes verdict
 
@@ -51,10 +52,10 @@ Supporting notes:
 - No recurrence run exists yet from the current surviving fork state
 - No `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run exists yet from the current surviving fork state
 - The remote substrate is not warm:
-  - on `2026-04-01 11:05 UTC`, `wth-gpu-01` was `mixed`, not fully blocked, with only `zhijianliu`'s 1-GPU job `1942` scheduled through `2026-04-01 14:27 UTC`
+  - on `2026-04-02 23:01 UTC`, `wth-gpu-01` had three live jobs using `6 / 8` GPUs total: `1960` (`zhijianliu`, `1` GPU), `1965` (`zhijianliu`, `1` GPU), and `1967` (`zekaili`, `4` GPUs), so the required `8`-GPU baseline still could not launch
   - `/data/scratch/murphy` exists and `/data/scratch/murphy/cache` exists
-  - `/data/users/murphy` does not exist
-  - no ready Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer cache was visible under the checked Murphy paths (`/data/scratch/murphy/parameter-golf` and `/data/scratch/murphy/projects/parameter-golf` were both absent)
+  - `/data/scratch/murphy/parameter-golf`, `/data/scratch/murphy/projects/parameter-golf`, and `/data/users/murphy` were absent in the current recheck
+  - a shallow scan under `/data/scratch/murphy` did not find `fineweb10B_sp1024` or `fineweb_1024_bpe.model`
 
 ## Why Recurrence Is First
 
@@ -158,4 +159,4 @@ For every run, record the following in one place:
 
 ## Current Blocker
 
-There is still no honest performance claim beyond the public baseline because the remote substrate is not staged yet. The old full-node blocker note is no longer current: the node is partially free now, but only `7 / 8` GPUs are available and there is still no ready checkout/data surface for Murphy under `/data/scratch`. The next executable step, once the substrate is materialized and the full 8-GPU window is real, is baseline reproduction first, not model editing first.
+There is still no honest performance claim beyond the public baseline because the remote substrate is not staged yet. The old single-job queue-wall note is no longer current, but the replacement blocker is still real: the node currently has only `2 / 8` GPUs free, and there is still no ready checkout or SP1024 data surface for Murphy under `/data/scratch`. The next executable step, once the substrate is materialized and the full `8`-GPU window is real, is baseline reproduction first, not model editing first.

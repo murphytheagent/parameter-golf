@@ -46,6 +46,11 @@ Use `outputs/run_jobs/<run_id>/` for queued-node runs. Each run directory should
   - `MAX_WALLCLOCK_SECONDS=120`
   - purpose: validate repo/data/env/logging path with minimal resource pressure
   - validated once already as job `1993`: `val_bpb=1.57745762`, `1111` steps, `12,697,534` total int8+zlib bytes
+- Lean recurrence smoke:
+  - `RUN_ID=rec_u3_r3_d512_kv4_mlp2_smoke1gpu`
+  - same `1` GPU / `2` CPU / `12G` envelope as the baseline smoke
+  - add `NUM_UNIQUE_LAYERS=3` while keeping `NUM_LAYERS=9`
+  - validated once already as job `2000`: `val_bpb=1.60109017`, `1454` steps, `4,963,934` total int8+zlib bytes
 - Real baseline:
   - `RUN_ID=baseline_sp1024_localcheck`
   - `--gres=gpu:8`

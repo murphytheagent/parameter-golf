@@ -4,7 +4,8 @@
 
 - Keep `PLAN.md`, the PDF render in `outputs/plan_report/`, and `TRACKER.md` synced whenever the stage rule, baseline anchor, or experiment verdicts change.
 - Turn the successful `1993` smoke into a repeatable idea-testing loop with minimal CPU and memory.
-- Implement shared-depth recurrence and run the first lean `1`-GPU recurrence smoke against the `1993` anchor.
+- Run `rec_u3_r3_d576_kv4_mlp2_smoke1gpu`.
+- Run `rec_u3_r3_d640_kv4_mlp2_smoke1gpu`.
 - Reproduce the published `9 x 512` baseline from this fork later as the honest comparison gate before claiming improvement.
 - Keep the log parser and run-directory layout current so later experiments do not require manual tail parsing.
 

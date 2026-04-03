@@ -30,6 +30,18 @@ For the self-contained research and implementation plan, read `PLAN.md`. The col
   - stopped at `1111` steps in `120.101s` with `step_avg:108.10ms`
   - peak GPU memory `1335 MiB allocated / 1678 MiB reserved`
   - total int8+zlib submission size `12,697,534` bytes
+- First recurrence smoke:
+  - job `2000` ran `NUM_UNIQUE_LAYERS=3` with logical depth `9`
+  - `final_int8_zlib_roundtrip_exact val_bpb:1.60109017`
+  - stopped at `1454` steps in `120.007s` with `step_avg:82.54ms`
+  - peak GPU memory `1173 MiB allocated / 1448 MiB reserved`
+  - total int8+zlib submission size `4,963,934` bytes
+  - delta versus the lean baseline smoke: `+0.02363255` worse on `val_bpb`
+- Static recurrence size check at init:
+  - `d=512` total about `1.77 MB`
+  - `d=576` total about `2.15 MB`
+  - `d=640` total about `2.61 MB`
+  - inference: the current recurrence line is still underusing the byte budget
 - Athena-backed ranking for this repo and constraint set:
   - `1)` shared-depth recurrence / aggressive tying
   - `2)` bounded test-time adaptation / streaming memory
@@ -48,7 +60,7 @@ For the self-contained research and implementation plan, read `PLAN.md`. The col
 - There is still no Murphy-run baseline anchor for any "beats baseline" claim.
 - The first working runtime surface is now lean idea-testing rather than `8`-GPU reproduction:
   - the earlier queued jobs `1989` and `1990` were intentionally canceled after the collaborator redirected the first stage
-  - `1993` validated the warmed substrate, but there is still no architecture comparison run yet
+  - `1993` validated the warmed substrate and `2000` produced the first architecture comparison
   - `/data` still has only `219G` free of `7.0T`, so scratch cleanup will matter once later runs start accumulating
 
 ## Exact Next Execution Path
@@ -58,21 +70,22 @@ For the self-contained research and implementation plan, read `PLAN.md`. The col
 2. Idea-testing surface
    - Done: lean smoke job `1993` validated the warmed path and artifact capture.
 3. First code change
-   - Add shared-depth recurrence with a small number of unique blocks and a repeat loop.
-   - Keep exporter logic, optimizer split, tokenizer, dataset, and evaluation code unchanged.
-   - Keep repeat-specific parameters tiny and separate from the shared matrices.
+   - Done: added shared-depth recurrence with `NUM_UNIQUE_LAYERS` while keeping the existing tokenizer, exporter, and optimizer split intact.
 4. First lean recurrence smoke
-   - Run the first recurrence test under the same lean `1`-GPU envelope before spending more resources.
-   - Preferred first target: `rec_u3_r3_d512_kv4_mlp2`.
-5. Baseline comparison gate
+   - Done: `rec_u3_r3_d512_kv4_mlp2_smoke1gpu`.
+5. Next cheap sweep
+   - Run `rec_u3_r3_d576_kv4_mlp2_smoke1gpu`.
+   - Run `rec_u3_r3_d640_kv4_mlp2_smoke1gpu`.
+   - Do not call the family dead until one of the wider runs has been checked; the `d=512` line is too far under the byte cap.
+6. Baseline comparison gate
    - Reproduce the published `9 x 512` run from this fork on the full challenge surface before claiming any baseline improvement.
    - Treat that later run as the local comparison anchor even if it differs slightly from the published record.
-6. First recurrence sweep
+7. First recurrence sweep
    - `baseline_9x512_kv4_mlp2`
    - `rec_u3_r3_d512_kv4_mlp2`
    - `rec_u3_r3_d576_kv4_mlp2`
    - `rec_u3_r3_d640_kv4_mlp2`
-7. Post-sweep decision rule
+8. Post-sweep decision rule
    - Positive: any recurrence run beats the local baseline by `>= 0.002` quantized `val_bpb`
    - Negative: all recurrence runs lose by `>= 0.010`
    - Ambiguous: keep one stable recurrence anchor and run exactly one cheap `KV4 -> KV2` reallocation before switching families
@@ -83,7 +96,9 @@ For the self-contained research and implementation plan, read `PLAN.md`. The col
 | --- | --- | --- | --- | --- | --- |
 | `baseline_sp1024_smoke_1gpu_lean` | smoke | `9 x 512`, `KV4`, `MLP2`, `1` GPU, `2` CPUs, `12G`, `TRAIN_BATCH_TOKENS=32768`, `120s` | validate repo/data/env/logging path on the warmed substrate with the collaborator's minimal-resource constraint | completed (`1993`) | exact `val_bpb=1.57745762`, `1111` steps, `12,697,534` bytes |
 | `baseline_9x512_kv4_mlp2` | baseline | `9 x 512`, `KV4`, `MLP2` | reproduce local anchor under the full challenge contract before claiming improvement | pending | later comparison gate, no longer the first runtime action |
-| `rec_u3_r3_d512_kv4_mlp2_smoke1gpu` | recurrence-smoke | `3` unique blocks, `3` repeats, `d=512`, `KV4`, `MLP2`, lean `1`-GPU envelope | first architecture comparison on the cheap validated surface | pending | next actual experiment |
+| `rec_u3_r3_d512_kv4_mlp2_smoke1gpu` | recurrence-smoke | `3` unique blocks, `3` repeats, `d=512`, `KV4`, `MLP2`, lean `1`-GPU envelope | first architecture comparison on the cheap validated surface | completed (`2000`) | exact `val_bpb=1.60109017`; worse than baseline smoke by `0.0236`, but faster and much smaller |
+| `rec_u3_r3_d576_kv4_mlp2_smoke1gpu` | recurrence-smoke | `3` unique blocks, `3` repeats, `d=576`, `KV4`, `MLP2`, lean `1`-GPU envelope | widen the recurrence line toward the byte budget | pending | next cheap recurrence test |
+| `rec_u3_r3_d640_kv4_mlp2_smoke1gpu` | recurrence-smoke | `3` unique blocks, `3` repeats, `d=640`, `KV4`, `MLP2`, lean `1`-GPU envelope | push the same family closer to the byte ceiling | pending | likely the strongest cheap follow-up |
 | `rec_u3_r3_d512_kv4_mlp2` | recurrence | `3` unique blocks, `3` repeats, `d=512`, `KV4`, `MLP2` | cheapest recurrence test against same width as baseline | pending | first recurrence anchor after baseline verdict |
 | `rec_u3_r3_d576_kv4_mlp2` | recurrence | `3` unique blocks, `3` repeats, `d=576`, `KV4`, `MLP2` | test whether width reallocation helps recurrence under cap | pending | keep exporter unchanged |
 | `rec_u3_r3_d640_kv4_mlp2` | recurrence | `3` unique blocks, `3` repeats, `d=640`, `KV4`, `MLP2` | push depth-per-byte line near cap | pending | only live if dry size check stays under cap |

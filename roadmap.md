@@ -17,11 +17,11 @@ Last updated: 2026-04-03 08:01 UTC
   - The remote run surface is finally warm: `/data/scratch/murphy/parameter-golf` exists on `origin/main` commit `08ee8ba`, the full SP1024 dataset/tokenizer are present under `data/`, and the working CUDA env is `/home/murphy/miniforge3/envs/swe311`.
   - The collaborator explicitly relaxed the early-stage resource rule: idea-testing and code-testing may use `1` GPU with minimal CPU and host-memory requests before the later `8`-GPU comparison gate.
   - First lean run result now exists under `outputs/run_jobs/baseline_sp1024_smoke_1gpu_lean/`: job `1993` completed cleanly at `val_bpb=1.57745762`, `1111` steps, `120.101s`, and `12,697,534` total int8+zlib bytes.
+  - First recurrence comparison now exists too: job `2000` (`rec_u3_r3_d512_kv4_mlp2_smoke1gpu`) landed at `val_bpb=1.60109017`, `1454` steps, `120.007s`, and `4,963,934` total int8+zlib bytes.
 - Unproved:
   - None of the earlier project-local tracker docs or first-wave implementation commits survived in this checkout. The current fork contains only the challenge code plus `outputs/literature/2026-03-16-kimi-attention-residuals.pdf`.
-  - No recurrence, `MTP-lite`, AttnRes-lite, or bounded test-time adaptation experiment has actually been run from this surviving fork state.
   - No Murphy-run baseline has finished yet, so there is still no local comparison anchor for recurrence.
-  - The lean runtime surface exists, but there is still no architecture comparison run yet, and there is still no later full-contract baseline anchor.
+  - The recurrence family has only been checked at `d=512` so far, and static size estimates show that even `d=640` still leaves a lot of byte headroom. There is still no later full-contract baseline anchor.
 
 ## Milestone 1 - Restore Tracker And Remote Substrate
 
@@ -42,6 +42,8 @@ Activity log:
 - 2026-04-03 07:54 UTC: Warmed the real run surface on the node instead of leaving the plan blocked on missing infrastructure. `/data/scratch/murphy/parameter-golf` now exists at `origin/main` commit `08ee8ba`, the full SP1024 dataset/tokenizer are present under that checkout, and the working CUDA env is `/home/murphy/miniforge3/envs/swe311`.
 - 2026-04-03 08:01 UTC: The collaborator explicitly redirected the first stage away from `8` GPUs: use minimal CPU and memory and only `1` GPU for idea-testing/code-testing. The earlier queued jobs `1989` and `1990` were canceled on that basis. After one bad submit caused by an unexpanded `PYBIN` variable, the corrected lean smoke job `1993` started successfully on `1` GPU / `2` CPUs / `12G` host memory and is now the active first experiment.
 - 2026-04-03 08:04 UTC: Lean smoke job `1993` completed cleanly. Exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.57745762`, `1111` steps in `120.101s`, `step_avg:108.10ms`, peak GPU memory `1335 MiB allocated / 1678 MiB reserved`, and `12,697,534` total int8+zlib submission bytes. This does not beat the public baseline, but it proves the cheap idea-testing loop is real; the next move is the first recurrence code change under the same lean envelope.
+- 2026-04-03 08:18 UTC: Implemented the first shared-depth recurrence path by adding `NUM_UNIQUE_LAYERS` while keeping logical depth `9` and the existing exporter/optimizer split. Static size checks immediately showed why `d=512` is not a fair family verdict: `rec_u3_r3_d512` is only about `1.77 MB` total at init, while `d=576` and `d=640` are still only about `2.15 MB` and `2.61 MB`.
+- 2026-04-03 08:18 UTC: First recurrence smoke job `2000` completed cleanly. Exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.60109017`, `1454` steps in `120.007s`, `step_avg:82.54ms`, peak GPU memory `1173 MiB allocated / 1448 MiB reserved`, and `4,963,934` total int8+zlib submission bytes. Relative to the lean baseline smoke, this first recurrence patch is worse by about `0.0236` on `val_bpb`, but it buys clear systems wins: more steps, lower memory, and a much smaller artifact. Current inference: the family is undertrained or underparameterized, not dead; the next cheap sweep should widen to `576` and `640`.
 
 ## Milestone 2 - Reproduce The Published Baseline In Our Environment
 

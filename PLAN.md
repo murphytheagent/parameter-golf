@@ -37,6 +37,17 @@ This file is the self-contained research and implementation plan for the current
   - exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.57745762`
   - stopped at `1111` steps in `120.101s`
   - total int8+zlib submission size: `12,697,534` bytes
+- First recurrence smoke:
+  - job `2000` ran `NUM_UNIQUE_LAYERS=3` with logical depth still `9`
+  - exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.60109017`
+  - stopped at `1454` steps in `120.007s`
+  - total int8+zlib submission size: `4,963,934` bytes
+  - relative to the lean baseline smoke, it is worse by about `0.0236` on `val_bpb`, but it is faster and much smaller
+- Static size recheck for the recurrence line:
+  - `rec_u3_r3_d512`: about `1.77 MB` total at init
+  - `rec_u3_r3_d576`: about `2.15 MB` total at init
+  - `rec_u3_r3_d640`: about `2.61 MB` total at init
+  - inference: this first recurrence patch is still massively underusing the `16 MB` budget
 
 ### Execution-stage correction
 
@@ -69,7 +80,6 @@ Supporting notes:
 ## What Is Not Established
 
 - No reproduced local baseline exists yet from the current surviving fork state
-- No recurrence run exists yet from the current surviving fork state
 - No `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run exists yet from the current surviving fork state
 - There is still no challenge-honest baseline comparison yet:
   - the earlier queued jobs `1989` and `1990` were intentionally canceled after the collaborator redirected the first stage away from `8` GPUs
@@ -185,4 +195,4 @@ For every run, record the following in one place:
 
 ## Current Blocker
 
-There is still no honest performance claim beyond the public baseline because no Murphy-run baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and `1993` already produced the first cheap anchor. The remaining blocker applies only to challenge-honest comparison, not to the next coding step: before claiming an actual baseline improvement, the project still needs a Murphy-run `8`-GPU anchor, but before that the next executable move is a real architecture change under the lean `1`-GPU envelope.
+There is still no honest performance claim beyond the public baseline because no Murphy-run baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and both `1993` and `2000` have already produced usable cheap-stage results. The current inference is narrower than "recurrence fails": the first shared-depth recurrence patch is worse on cheap-stage `val_bpb`, but it also leaves most of the byte budget unused. The next executable move is therefore to continue the planned width sweep (`576`, then `640`) under the same lean envelope before making any family-level verdict.

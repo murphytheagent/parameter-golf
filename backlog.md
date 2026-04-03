@@ -4,9 +4,8 @@
 
 - Keep `PLAN.md`, the PDF render in `outputs/plan_report/`, and `TRACKER.md` synced whenever the stage rule, baseline anchor, or experiment verdicts change.
 - Turn the successful `1993` smoke into a repeatable idea-testing loop with minimal CPU and memory.
-- Run `rec_u3_r3_d640_kv2_mlp2_smoke1gpu`.
-- Reproduce the published `9 x 512` baseline from this fork later as the honest comparison gate before claiming improvement.
-- If the cheap `KV4 -> KV2` reallocation stays live, promote `rec_u3_r3_d640_kv4_mlp2` and `rec_u3_r3_d640_kv2_mlp2` to the full contract.
+- Wait for queued honest baseline job `2008` (`baseline_sp1024_localcheck`) to start once the node clears.
+- If `2008` lands cleanly, run the promoted full-contract recurrence anchor `rec_u3_r3_d640_kv4_mlp2`.
 - Keep the log parser and run-directory layout current so later experiments do not require manual tail parsing.
 
 ## Completed This Round
@@ -17,6 +16,8 @@
 - Proved that a corrected minimal-resource `1`-GPU smoke can actually launch on the warmed substrate.
 - Ran the widened recurrence smokes: `rec_u3_r3_d576_kv4_mlp2_smoke1gpu` and `rec_u3_r3_d640_kv4_mlp2_smoke1gpu`.
 - Narrowed the recurrence follow-up path to one anchor: keep `d=640`, then try `KV4 -> KV2`.
+- Ran the cheap `KV4 -> KV2` falsification check and dropped that branch after it lost cleanly to `d=640, KV4`.
+- Queued the honest `8`-GPU baseline gate as job `2008`.
 
 ## First Implementation
 
@@ -30,8 +31,7 @@
 
 - Reproduce `baseline_9x512_kv4_mlp2` under the honest `8`-GPU contract.
 - Run `rec_u3_r3_d640_kv4_mlp2`.
-- If the cheap `KV4 -> KV2` reallocation stays live, run `rec_u3_r3_d640_kv2_mlp2`.
-- If recurrence still looks only neutral after that, switch the next cheap budget to `MTP-lite`.
+- If recurrence still looks only neutral after that, switch the next clean branch to `MTP-lite`.
 
 ## Later Branches
 

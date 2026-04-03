@@ -1,6 +1,6 @@
 # Parameter Golf Plan
 
-Last updated: 2026-04-03 08:48 UTC
+Last updated: 2026-04-03 09:27 UTC
 
 ## Objective
 
@@ -52,12 +52,22 @@ This file is the self-contained research and implementation plan for the current
   - stopped at `1348` steps in `120.039s`
   - total int8+zlib submission size: `7,265,478` bytes
   - relative to the lean baseline smoke, it is worse by about `0.0080` on `val_bpb`
+- Cheap KV-head reallocation check:
+  - job `2007` (`d=640`, `KV2`) landed at `final_int8_zlib_roundtrip_exact val_bpb:1.59932364`
+  - stopped at `1261` steps in `120.016s`
+  - total int8+zlib submission size: `6,602,540` bytes
+  - relative to the `d=640, KV4` anchor, it is worse by about `0.0139` on `val_bpb`
+  - decision: drop the `KV2` branch from the current clean path
+- Full-contract baseline gate:
+  - job `2008` (`baseline_sp1024_localcheck`) is queued on `8` GPUs
+  - current external blockers are job `1965` until `2026-04-03 23:08 UTC` and job `2002` until `2026-04-03 12:28 UTC`
 - Static size recheck for the recurrence line:
   - `rec_u3_r3_d512`: about `1.77 MB` total at init
   - `rec_u3_r3_d576`: about `2.15 MB` total at init
   - `rec_u3_r3_d640`: about `2.61 MB` total at init
   - inference: this first recurrence patch is still massively underusing the `16 MB` budget
   - cheap-stage verdict: widening improved the recurrence line monotonically, so the family is now neutral-but-live rather than "dead"
+  - the cheap `KV2` reallocation failed, so there is no more low-cost ambiguity left before the honest baseline gate
 
 ### Execution-stage correction
 
@@ -163,6 +173,7 @@ Cheap-stage sweep now completed:
 - `rec_u3_r3_d512_kv4_mlp2_smoke1gpu`: `1.60109017`
 - `rec_u3_r3_d576_kv4_mlp2_smoke1gpu`: `1.59122937`
 - `rec_u3_r3_d640_kv4_mlp2_smoke1gpu`: `1.58541212`
+- `rec_u3_r3_d640_kv2_mlp2_smoke1gpu`: `1.59932364`
 
 Interpretation:
 
@@ -170,7 +181,8 @@ Interpretation:
 - `r3`: `3` repeats
 - widths `512 / 576 / 640` were the cheap-stage width-selection sweep for the recurrence family
 - current promotion decision: keep only `d=640` as the main recurrence anchor unless it becomes unstable later
-- next cheap discriminator: one `KV4 -> KV2` reallocation on the `d=640` line
+- cheap `KV4 -> KV2` reallocation verdict: negative; drop that branch
+- next honest discriminator: the queued `8`-GPU baseline, then the promoted `d=640, KV4` recurrence run
 
 ### 5. Decide the next family with a hard rule
 
@@ -185,13 +197,13 @@ Current cheap-stage status:
 
 - the family is in the ambiguous-but-live bucket
 - `d=640` is the cleanest promoted anchor
-- the only cheap follow-up still justified before a full comparison run is `rec_u3_r3_d640_kv2_mlp2_smoke1gpu`
+- the cheap `KV2` follow-up lost, so there is no more low-cost branch to test before the full comparison gate
 
 ## What Comes After The Recurrence Verdict
 
 Priority order:
 
-1. cheap `KV4 -> KV2` sweep on the `d=640` recurrence anchor
+1. honest local baseline, then the promoted `d=640, KV4` recurrence run
 2. `MTP-lite` on the winning stem, or on the baseline stem if recurrence fails cleanly
 3. bounded test-time adaptation or streaming memory only if training-side changes stall
 4. AttnRes-lite only as a later falsification branch for depth-state mixing
@@ -215,4 +227,4 @@ For every run, record the following in one place:
 
 ## Current Blocker
 
-There is still no honest performance claim beyond the public baseline because no Murphy-run full-contract baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and jobs `1993`, `2000`, `2003`, and `2004` have already produced usable cheap-stage results. The current inference is now narrower than "recurrence might be underparameterized": widening the shared-depth recurrence line from `512 -> 576 -> 640` improved cheap-stage quantized `val_bpb` monotonically to within about `0.0080` of the lean baseline smoke while still using only `7.27 MB` total int8+zlib bytes. The next executable move is therefore one cheap `KV4 -> KV2` reallocation on the `d=640` anchor, not another width guess.
+There is still no honest performance claim beyond the public baseline because no Murphy-run full-contract baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and jobs `1993`, `2000`, `2003`, `2004`, and `2007` have already produced usable cheap-stage results. The current inference is now narrower than "recurrence might be underparameterized": widening the shared-depth recurrence line from `512 -> 576 -> 640` improved cheap-stage quantized `val_bpb` monotonically to within about `0.0080` of the lean baseline smoke while still using only `7.27 MB` total int8+zlib bytes, and the attempted `KV4 -> KV2` reallocation then lost cleanly. The next executable move is therefore the queued honest `8`-GPU baseline (`2008`), not another cheap branch.

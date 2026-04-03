@@ -1,6 +1,6 @@
 # Remote Runbook
 
-Last updated: 2026-04-03 08:48 UTC
+Last updated: 2026-04-03 09:27 UTC
 
 This note pins the current remote execution surface for Parameter Golf so later sessions can resume from disk instead of reconstructing the node state from Slack.
 
@@ -59,18 +59,22 @@ Use `outputs/run_jobs/<run_id>/` for queued-node runs. Each run directory should
   - `RUN_ID=rec_u3_r3_d640_kv4_mlp2_smoke1gpu`
   - same lean envelope, set `MODEL_DIM=640`
   - validated once already as job `2004`: `val_bpb=1.58541212`, `1348` steps, `7,265,478` total int8+zlib bytes
-- Next cheap recurrence discriminator:
+- Cheap KV-head falsification check:
   - `RUN_ID=rec_u3_r3_d640_kv2_mlp2_smoke1gpu`
   - same `1` GPU / `2` CPU / `12G` envelope
   - keep `NUM_UNIQUE_LAYERS=3`, `NUM_LAYERS=9`, `MODEL_DIM=640`, `MLP_MULT=2`
   - change `NUM_KV_HEADS=2`
-  - purpose: test whether KV-head reallocation can close the remaining cheap-stage gap on the promoted `d=640` recurrence anchor before an honest `8`-GPU comparison run
+  - validated once already as job `2007`: `val_bpb=1.59932364`, `1261` steps, `6,602,540` total int8+zlib bytes
+  - verdict: slower and worse than the `d=640, KV4` anchor, so the `KV2` branch is currently dead
 - Real baseline:
   - `RUN_ID=baseline_sp1024_localcheck`
   - `--gres=gpu:8`
+  - `--cpus-per-task=16`
+  - `--mem=64G`
   - `MAX_WALLCLOCK_SECONDS=600`
   - `VAL_LOSS_EVERY=200`
   - purpose: reproduce the published `9 x 512` anchor later, at the challenge-honest comparison gate
+  - queued once already as job `2008`; current external blockers are jobs `1965` (until `2026-04-03 23:08 UTC`) and `2002` (until `2026-04-03 12:28 UTC`)
 
 ## Parsing Logs
 

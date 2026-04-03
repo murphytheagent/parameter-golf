@@ -1,6 +1,6 @@
 # Parameter Golf Plan
 
-Last updated: 2026-04-03 08:01 UTC
+Last updated: 2026-04-03 08:48 UTC
 
 ## Objective
 
@@ -43,11 +43,21 @@ This file is the self-contained research and implementation plan for the current
   - stopped at `1454` steps in `120.007s`
   - total int8+zlib submission size: `4,963,934` bytes
   - relative to the lean baseline smoke, it is worse by about `0.0236` on `val_bpb`, but it is faster and much smaller
+- Widened recurrence smokes:
+  - job `2003` (`d=576`) landed at `final_int8_zlib_roundtrip_exact val_bpb:1.59122937`
+  - stopped at `1380` steps in `120.075s`
+  - total int8+zlib submission size: `6,069,746` bytes
+  - relative to the lean baseline smoke, it is worse by about `0.0138` on `val_bpb`
+  - job `2004` (`d=640`) landed at `final_int8_zlib_roundtrip_exact val_bpb:1.58541212`
+  - stopped at `1348` steps in `120.039s`
+  - total int8+zlib submission size: `7,265,478` bytes
+  - relative to the lean baseline smoke, it is worse by about `0.0080` on `val_bpb`
 - Static size recheck for the recurrence line:
   - `rec_u3_r3_d512`: about `1.77 MB` total at init
   - `rec_u3_r3_d576`: about `2.15 MB` total at init
   - `rec_u3_r3_d640`: about `2.61 MB` total at init
   - inference: this first recurrence patch is still massively underusing the `16 MB` budget
+  - cheap-stage verdict: widening improved the recurrence line monotonically, so the family is now neutral-but-live rather than "dead"
 
 ### Execution-stage correction
 
@@ -81,6 +91,7 @@ Supporting notes:
 
 - No reproduced local baseline exists yet from the current surviving fork state
 - No `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run exists yet from the current surviving fork state
+- No recurrence run has beaten even the lean baseline smoke yet
 - There is still no challenge-honest baseline comparison yet:
   - the earlier queued jobs `1989` and `1990` were intentionally canceled after the collaborator redirected the first stage away from `8` GPUs
   - `1993` proved the lean runtime path, but it is only a code-testing anchor, not a baseline-comparison anchor
@@ -145,18 +156,21 @@ Acceptance rule:
   - only any additional skip-mix coefficients that prove necessary
 - Do not mix in `MTP-lite`, test-time adaptation, or full AttnRes in the first recurrence commit
 
-### 4. Run the first recurrence sweep
+### 4. Complete the cheap recurrence sweep, then promote one anchor
 
-- `baseline_9x512_kv4_mlp2`
-- `rec_u3_r3_d512_kv4_mlp2`
-- `rec_u3_r3_d576_kv4_mlp2`
-- `rec_u3_r3_d640_kv4_mlp2`
+Cheap-stage sweep now completed:
+
+- `rec_u3_r3_d512_kv4_mlp2_smoke1gpu`: `1.60109017`
+- `rec_u3_r3_d576_kv4_mlp2_smoke1gpu`: `1.59122937`
+- `rec_u3_r3_d640_kv4_mlp2_smoke1gpu`: `1.58541212`
 
 Interpretation:
 
 - `u3`: `3` unique blocks
 - `r3`: `3` repeats
-- widths `512 / 576 / 640` test whether width reallocation helps recurrence under the same byte cap
+- widths `512 / 576 / 640` were the cheap-stage width-selection sweep for the recurrence family
+- current promotion decision: keep only `d=640` as the main recurrence anchor unless it becomes unstable later
+- next cheap discriminator: one `KV4 -> KV2` reallocation on the `d=640` line
 
 ### 5. Decide the next family with a hard rule
 
@@ -167,11 +181,17 @@ Interpretation:
 - Ambiguous:
   - if recurrence is neutral but stable, keep one recurrence anchor and run exactly one cheap `KV4 -> KV2` reallocation test before switching families
 
+Current cheap-stage status:
+
+- the family is in the ambiguous-but-live bucket
+- `d=640` is the cleanest promoted anchor
+- the only cheap follow-up still justified before a full comparison run is `rec_u3_r3_d640_kv2_mlp2_smoke1gpu`
+
 ## What Comes After The Recurrence Verdict
 
 Priority order:
 
-1. cheap `KV4 -> KV2` sweep on the best stable recurrence anchor if recurrence is neutral
+1. cheap `KV4 -> KV2` sweep on the `d=640` recurrence anchor
 2. `MTP-lite` on the winning stem, or on the baseline stem if recurrence fails cleanly
 3. bounded test-time adaptation or streaming memory only if training-side changes stall
 4. AttnRes-lite only as a later falsification branch for depth-state mixing
@@ -195,4 +215,4 @@ For every run, record the following in one place:
 
 ## Current Blocker
 
-There is still no honest performance claim beyond the public baseline because no Murphy-run baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and both `1993` and `2000` have already produced usable cheap-stage results. The current inference is narrower than "recurrence fails": the first shared-depth recurrence patch is worse on cheap-stage `val_bpb`, but it also leaves most of the byte budget unused. The next executable move is therefore to continue the planned width sweep (`576`, then `640`) under the same lean envelope before making any family-level verdict.
+There is still no honest performance claim beyond the public baseline because no Murphy-run full-contract baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and jobs `1993`, `2000`, `2003`, and `2004` have already produced usable cheap-stage results. The current inference is now narrower than "recurrence might be underparameterized": widening the shared-depth recurrence line from `512 -> 576 -> 640` improved cheap-stage quantized `val_bpb` monotonically to within about `0.0080` of the lean baseline smoke while still using only `7.27 MB` total int8+zlib bytes. The next executable move is therefore one cheap `KV4 -> KV2` reallocation on the `d=640` anchor, not another width guess.

@@ -1,6 +1,6 @@
 # Parameter Golf Roadmap
 
-Last updated: 2026-04-03 08:01 UTC
+Last updated: 2026-04-03 08:48 UTC
 
 ## Current Status
 
@@ -13,15 +13,16 @@ Last updated: 2026-04-03 08:01 UTC
   - Athena's ranking for this exact challenge stayed stable across the successful retries: `1)` shared-depth recurrence / aggressive tying, `2)` bounded test-time adaptation or streaming memory, `3)` `MTP-lite`, with `MQA/GQA` as a cheap supporting sweep and deeper MLA / latent-KV behind that.
   - Athena's later AttnRes check did not promote Kimi Attention Residuals into round one. The recommendation remained: recurrence first, `MTP-lite` second, AttnRes only as a later falsification branch.
   - The current exporter still keeps float tensors with `<= 65,536` elements in fp16 passthrough, so naive stored low-rank factorization is still a weak byte-saving story here.
-  - The fork checkout is healthy again: `projects/parameter-golf` is a clean repo on `main` at `0c0ea98`, with only untracked local outputs left behind.
+  - The fork checkout is healthy again: `projects/parameter-golf` is a real repo on `main`, now ahead of `origin/main` with the run-surface and recurrence docs/workflow commits, with only untracked local outputs left behind.
   - The remote run surface is finally warm: `/data/scratch/murphy/parameter-golf` exists on `origin/main` commit `08ee8ba`, the full SP1024 dataset/tokenizer are present under `data/`, and the working CUDA env is `/home/murphy/miniforge3/envs/swe311`.
   - The collaborator explicitly relaxed the early-stage resource rule: idea-testing and code-testing may use `1` GPU with minimal CPU and host-memory requests before the later `8`-GPU comparison gate.
   - First lean run result now exists under `outputs/run_jobs/baseline_sp1024_smoke_1gpu_lean/`: job `1993` completed cleanly at `val_bpb=1.57745762`, `1111` steps, `120.101s`, and `12,697,534` total int8+zlib bytes.
   - First recurrence comparison now exists too: job `2000` (`rec_u3_r3_d512_kv4_mlp2_smoke1gpu`) landed at `val_bpb=1.60109017`, `1454` steps, `120.007s`, and `4,963,934` total int8+zlib bytes.
+  - The widened recurrence line is now real rather than hypothetical: job `2003` (`d=576`) landed at `1.59122937` with `6,069,746` bytes, and job `2004` (`d=640`) landed at `1.58541212` with `7,265,478` bytes.
 - Unproved:
   - None of the earlier project-local tracker docs or first-wave implementation commits survived in this checkout. The current fork contains only the challenge code plus `outputs/literature/2026-03-16-kimi-attention-residuals.pdf`.
-  - No Murphy-run baseline has finished yet, so there is still no local comparison anchor for recurrence.
-  - The recurrence family has only been checked at `d=512` so far, and static size estimates show that even `d=640` still leaves a lot of byte headroom. There is still no later full-contract baseline anchor.
+  - No Murphy-run full-contract baseline has finished yet, so there is still no honest local comparison anchor for recurrence.
+  - The recurrence family is only proved on the cheap `1`-GPU surface so far. There is still no later full-contract baseline anchor, no cheap `KV4 -> KV2` reallocation result on the promoted `d=640` line, and no `MTP-lite` or test-time-adaptation result.
 
 ## Milestone 1 - Restore Tracker And Remote Substrate
 
@@ -44,6 +45,8 @@ Activity log:
 - 2026-04-03 08:04 UTC: Lean smoke job `1993` completed cleanly. Exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.57745762`, `1111` steps in `120.101s`, `step_avg:108.10ms`, peak GPU memory `1335 MiB allocated / 1678 MiB reserved`, and `12,697,534` total int8+zlib submission bytes. This does not beat the public baseline, but it proves the cheap idea-testing loop is real; the next move is the first recurrence code change under the same lean envelope.
 - 2026-04-03 08:18 UTC: Implemented the first shared-depth recurrence path by adding `NUM_UNIQUE_LAYERS` while keeping logical depth `9` and the existing exporter/optimizer split. Static size checks immediately showed why `d=512` is not a fair family verdict: `rec_u3_r3_d512` is only about `1.77 MB` total at init, while `d=576` and `d=640` are still only about `2.15 MB` and `2.61 MB`.
 - 2026-04-03 08:18 UTC: First recurrence smoke job `2000` completed cleanly. Exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.60109017`, `1454` steps in `120.007s`, `step_avg:82.54ms`, peak GPU memory `1173 MiB allocated / 1448 MiB reserved`, and `4,963,934` total int8+zlib submission bytes. Relative to the lean baseline smoke, this first recurrence patch is worse by about `0.0236` on `val_bpb`, but it buys clear systems wins: more steps, lower memory, and a much smaller artifact. Current inference: the family is undertrained or underparameterized, not dead; the next cheap sweep should widen to `576` and `640`.
+- 2026-04-03 08:48 UTC: Widened recurrence smoke job `2003` (`rec_u3_r3_d576_kv4_mlp2_smoke1gpu`) completed cleanly at `final_int8_zlib_roundtrip_exact val_bpb:1.59122937`, `1380` steps in `120.075s`, `step_avg:87.01ms`, and `6,069,746` total int8+zlib submission bytes. This recovered about `0.0099` of the `d=512` cheap-stage gap while staying far under the byte cap.
+- 2026-04-03 08:48 UTC: Widened recurrence smoke job `2004` (`rec_u3_r3_d640_kv4_mlp2_smoke1gpu`) completed cleanly at `final_int8_zlib_roundtrip_exact val_bpb:1.58541212`, `1348` steps in `120.039s`, `step_avg:89.05ms`, and `7,265,478` total int8+zlib submission bytes. Relative to the lean baseline smoke, the gap is now down to about `0.0080`, so the recurrence family is no longer in "likely dead" territory. The new clean path is: keep `d=640` as the cheap recurrence anchor, run one cheap `KV4 -> KV2` reallocation test, then decide whether the next honest comparison budget goes to the promoted recurrence line or to `MTP-lite`.
 
 ## Milestone 2 - Reproduce The Published Baseline In Our Environment
 

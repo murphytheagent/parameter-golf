@@ -1,6 +1,6 @@
 # Remote Runbook
 
-Last updated: 2026-04-03 08:01 UTC
+Last updated: 2026-04-03 08:48 UTC
 
 This note pins the current remote execution surface for Parameter Golf so later sessions can resume from disk instead of reconstructing the node state from Slack.
 
@@ -51,6 +51,20 @@ Use `outputs/run_jobs/<run_id>/` for queued-node runs. Each run directory should
   - same `1` GPU / `2` CPU / `12G` envelope as the baseline smoke
   - add `NUM_UNIQUE_LAYERS=3` while keeping `NUM_LAYERS=9`
   - validated once already as job `2000`: `val_bpb=1.60109017`, `1454` steps, `4,963,934` total int8+zlib bytes
+- Widened lean recurrence smokes:
+  - `RUN_ID=rec_u3_r3_d576_kv4_mlp2_smoke1gpu`
+  - same `1` GPU / `2` CPU / `12G` envelope
+  - keep `NUM_UNIQUE_LAYERS=3`, `NUM_LAYERS=9`, `NUM_KV_HEADS=4`, `MLP_MULT=2`, set `MODEL_DIM=576`
+  - validated once already as job `2003`: `val_bpb=1.59122937`, `1380` steps, `6,069,746` total int8+zlib bytes
+  - `RUN_ID=rec_u3_r3_d640_kv4_mlp2_smoke1gpu`
+  - same lean envelope, set `MODEL_DIM=640`
+  - validated once already as job `2004`: `val_bpb=1.58541212`, `1348` steps, `7,265,478` total int8+zlib bytes
+- Next cheap recurrence discriminator:
+  - `RUN_ID=rec_u3_r3_d640_kv2_mlp2_smoke1gpu`
+  - same `1` GPU / `2` CPU / `12G` envelope
+  - keep `NUM_UNIQUE_LAYERS=3`, `NUM_LAYERS=9`, `MODEL_DIM=640`, `MLP_MULT=2`
+  - change `NUM_KV_HEADS=2`
+  - purpose: test whether KV-head reallocation can close the remaining cheap-stage gap on the promoted `d=640` recurrence anchor before an honest `8`-GPU comparison run
 - Real baseline:
   - `RUN_ID=baseline_sp1024_localcheck`
   - `--gres=gpu:8`

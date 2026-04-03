@@ -2,12 +2,18 @@
 
 ## Immediate
 
-- Keep `PLAN.md`, the PDF render in `outputs/plan_report/`, and `TRACKER.md` synced whenever the baseline anchor, experiment verdicts, or branch ordering changes.
-- Materialize the remote run surface under `/data/scratch/murphy/parameter-golf` instead of `$HOME`.
-- Route `HF_HOME`, hub, transformers, torch, and `XDG_CACHE_HOME` to `/data/scratch/murphy/cache`.
-- Download or copy the `fineweb10B_sp1024` dataset and `fineweb_1024_bpe.model` onto the remote data volume.
-- Reproduce the published `9 x 512` baseline from this fork and record the exact local reference metrics.
-- Add a compact run ledger template so every later experiment records the same byte and metric fields.
+- Keep `PLAN.md`, the PDF render in `outputs/plan_report/`, and `TRACKER.md` synced whenever the stage rule, baseline anchor, or experiment verdicts change.
+- Turn the successful `1993` smoke into a repeatable idea-testing loop with minimal CPU and memory.
+- Implement shared-depth recurrence and run the first lean `1`-GPU recurrence smoke against the `1993` anchor.
+- Reproduce the published `9 x 512` baseline from this fork later as the honest comparison gate before claiming improvement.
+- Keep the log parser and run-directory layout current so later experiments do not require manual tail parsing.
+
+## Completed This Round
+
+- Materialized the remote run surface under `/data/scratch/murphy/parameter-golf` instead of `$HOME`.
+- Routed `HF_HOME`, hub, transformers, torch, and `XDG_CACHE_HOME` to `/data/scratch/murphy/cache`.
+- Downloaded the full `fineweb10B_sp1024` dataset and `fineweb_1024_bpe.model` onto the remote data volume.
+- Proved that a corrected minimal-resource `1`-GPU smoke can actually launch on the warmed substrate.
 
 ## First Implementation
 

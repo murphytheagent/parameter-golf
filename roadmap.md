@@ -1,6 +1,6 @@
 # Parameter Golf Roadmap
 
-Last updated: 2026-04-02 23:09 UTC
+Last updated: 2026-04-03 08:01 UTC
 
 ## Current Status
 
@@ -14,10 +14,14 @@ Last updated: 2026-04-02 23:09 UTC
   - Athena's later AttnRes check did not promote Kimi Attention Residuals into round one. The recommendation remained: recurrence first, `MTP-lite` second, AttnRes only as a later falsification branch.
   - The current exporter still keeps float tensors with `<= 65,536` elements in fp16 passthrough, so naive stored low-rank factorization is still a weak byte-saving story here.
   - The fork checkout is healthy again: `projects/parameter-golf` is a clean repo on `main` at `0c0ea98`, with only untracked local outputs left behind.
+  - The remote run surface is finally warm: `/data/scratch/murphy/parameter-golf` exists on `origin/main` commit `08ee8ba`, the full SP1024 dataset/tokenizer are present under `data/`, and the working CUDA env is `/home/murphy/miniforge3/envs/swe311`.
+  - The collaborator explicitly relaxed the early-stage resource rule: idea-testing and code-testing may use `1` GPU with minimal CPU and host-memory requests before the later `8`-GPU comparison gate.
+  - First lean run result now exists under `outputs/run_jobs/baseline_sp1024_smoke_1gpu_lean/`: job `1993` completed cleanly at `val_bpb=1.57745762`, `1111` steps, `120.101s`, and `12,697,534` total int8+zlib bytes.
 - Unproved:
   - None of the earlier project-local tracker docs or first-wave implementation commits survived in this checkout. The current fork contains only the challenge code plus `outputs/literature/2026-03-16-kimi-attention-residuals.pdf`.
   - No recurrence, `MTP-lite`, AttnRes-lite, or bounded test-time adaptation experiment has actually been run from this surviving fork state.
-  - The remote substrate is still not warm: on `2026-04-02 23:01 UTC`, jobs `1960`, `1965`, and `1967` occupied `6 / 8` GPUs on `wth-gpu-01`, and no Murphy-owned Parameter Golf checkout or FineWeb SP1024 dataset/tokenizer surface was visible under the expected scratch paths.
+  - No Murphy-run baseline has finished yet, so there is still no local comparison anchor for recurrence.
+  - The lean runtime surface exists, but there is still no architecture comparison run yet, and there is still no later full-contract baseline anchor.
 
 ## Milestone 1 - Restore Tracker And Remote Substrate
 
@@ -35,6 +39,9 @@ Activity log:
 - 2026-03-30 09:39 UTC: Added a root `TRACKER.md` so the next session no longer has to reconstruct the state from `roadmap.md`, `backlog.md`, and `docs/round1-plan.md`. The tracker now carries the proved vs unproved ledger, the exact baseline-plus-recurrence handoff, and the pending experiment table.
 - 2026-03-30 10:20 UTC: Promoted the self-contained round-one plan into root `PLAN.md` after the collaborator clarified that the intended deliverable was the narrative plan file itself, not the compact tracker.
 - 2026-04-02 23:09 UTC: Rebuilt the collaborator-facing plan surface as `outputs/plan_report/parameter_golf_plan.pdf`, verified the render, and refreshed the blocker note with a live remote recheck. Current state: jobs `1960` (`1` GPU), `1965` (`1` GPU), and `1967` (`4` GPUs) still block the required `8`-GPU launch, while `/data/scratch/murphy` exists but no Murphy-owned Parameter Golf checkout or SP1024 dataset/tokenizer surface is materialized there yet.
+- 2026-04-03 07:54 UTC: Warmed the real run surface on the node instead of leaving the plan blocked on missing infrastructure. `/data/scratch/murphy/parameter-golf` now exists at `origin/main` commit `08ee8ba`, the full SP1024 dataset/tokenizer are present under that checkout, and the working CUDA env is `/home/murphy/miniforge3/envs/swe311`.
+- 2026-04-03 08:01 UTC: The collaborator explicitly redirected the first stage away from `8` GPUs: use minimal CPU and memory and only `1` GPU for idea-testing/code-testing. The earlier queued jobs `1989` and `1990` were canceled on that basis. After one bad submit caused by an unexpanded `PYBIN` variable, the corrected lean smoke job `1993` started successfully on `1` GPU / `2` CPUs / `12G` host memory and is now the active first experiment.
+- 2026-04-03 08:04 UTC: Lean smoke job `1993` completed cleanly. Exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.57745762`, `1111` steps in `120.101s`, `step_avg:108.10ms`, peak GPU memory `1335 MiB allocated / 1678 MiB reserved`, and `12,697,534` total int8+zlib submission bytes. This does not beat the public baseline, but it proves the cheap idea-testing loop is real; the next move is the first recurrence code change under the same lean envelope.
 
 ## Milestone 2 - Reproduce The Published Baseline In Our Environment
 
@@ -42,6 +49,9 @@ Success gate:
 - One clean run from this fork lands within `+-0.005` `val_bpb` of the published `1.22436570`.
 - Total bytes remain below `16,000,000`.
 - Remote logging and artifact capture are working.
+
+Stage note:
+- This is still the first honest comparison gate before any "beats baseline" claim, but it is no longer the required first runtime action during idea-testing.
 
 Pinned reference command:
 

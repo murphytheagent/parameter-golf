@@ -9,6 +9,7 @@ Local fork for OpenAI's 16 MB / 10-minute Parameter Golf challenge. Current focu
 - `roadmap.md` — current status, milestones, activity log, stage gates
 - `backlog.md` — open tasks and pending experiment/setup work
 - `docs/README.md` — index of durable notes for the fork
+- `docs/remote-runbook.md` — pinned node paths, cache exports, and run directory layout
 - Upstream `README.md` — challenge contract, public baseline, submission rules
 
 ## Sub-Session Instructions

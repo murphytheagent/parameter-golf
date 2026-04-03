@@ -1,6 +1,6 @@
 # Parameter Golf Plan
 
-Last updated: 2026-04-02 23:09 UTC
+Last updated: 2026-04-03 08:01 UTC
 
 ## Objective
 
@@ -25,6 +25,26 @@ This file is the self-contained research and implementation plan for the current
   - timed stop: `13,780` steps in `600.038` seconds
 - Unlimited-compute reference on the same stem:
   - `1.20737944` after `4` hours, so the objective still has real headroom without changing the tokenizer
+
+### Remote run surface
+
+- Scratch checkout now exists at `/data/scratch/murphy/parameter-golf` on `origin/main` commit `08ee8ba`
+- The full published `fineweb10B_sp1024` dataset and `fineweb_1024_bpe.model` tokenizer are materialized under that checkout
+- The working CUDA environment on the node is `/home/murphy/miniforge3/envs/swe311`, which already has `torch 2.9.1+cu128`, `numpy`, `datasets`, `sentencepiece`, and `huggingface_hub`
+- Run artifacts are now organized under `/data/scratch/murphy/parameter-golf/outputs/run_jobs/<run_id>/`
+- Lean smoke anchor:
+  - job `1993` completed cleanly on `1` GPU / `2` CPUs / `12G`
+  - exact result: `final_int8_zlib_roundtrip_exact val_bpb:1.57745762`
+  - stopped at `1111` steps in `120.101s`
+  - total int8+zlib submission size: `12,697,534` bytes
+
+### Execution-stage correction
+
+- The collaborator explicitly relaxed the early-stage resource rule on `2026-04-03 07:57 UTC`: idea-testing and code-testing do not need `8` GPUs yet
+- Current rule:
+  - use the smallest available GPU slice that can honestly exercise the path
+  - keep CPU and host-memory requests minimal in that stage
+  - reserve the full `8`-GPU baseline only for the later challenge-honest comparison gate
 
 ### Athena-backed ranking
 
@@ -51,11 +71,10 @@ Supporting notes:
 - No reproduced local baseline exists yet from the current surviving fork state
 - No recurrence run exists yet from the current surviving fork state
 - No `MTP-lite`, AttnRes-lite, or bounded test-time adaptation run exists yet from the current surviving fork state
-- The remote substrate is not warm:
-  - on `2026-04-02 23:01 UTC`, `wth-gpu-01` had three live jobs using `6 / 8` GPUs total: `1960` (`zhijianliu`, `1` GPU), `1965` (`zhijianliu`, `1` GPU), and `1967` (`zekaili`, `4` GPUs), so the required `8`-GPU baseline still could not launch
-  - `/data/scratch/murphy` exists and `/data/scratch/murphy/cache` exists
-  - `/data/scratch/murphy/parameter-golf`, `/data/scratch/murphy/projects/parameter-golf`, and `/data/users/murphy` were absent in the current recheck
-  - a shallow scan under `/data/scratch/murphy` did not find `fineweb10B_sp1024` or `fineweb_1024_bpe.model`
+- There is still no challenge-honest baseline comparison yet:
+  - the earlier queued jobs `1989` and `1990` were intentionally canceled after the collaborator redirected the first stage away from `8` GPUs
+  - `1993` proved the lean runtime path, but it is only a code-testing anchor, not a baseline-comparison anchor
+  - `/data` still has only `219G` free of `7.0T`, so later iterations should stay disciplined about artifact cleanup
 
 ## Why Recurrence Is First
 
@@ -67,11 +86,13 @@ Supporting notes:
 
 ## One Clean Execution Path
 
-### 1. Warm the remote substrate
+### 1. Remote substrate
 
+- Current state at `2026-04-03 07:54 UTC`: done
 - Use `/data/scratch/murphy/parameter-golf` as the working directory
 - Route `HF_HOME`, Hugging Face hub, transformers, torch, and `XDG_CACHE_HOME` to `/data/scratch/murphy/cache`
 - Materialize the `fineweb10B_sp1024` dataset and `fineweb_1024_bpe.model` on the same data volume
+- Keep run logs and copied artifacts under `outputs/run_jobs/<run_id>/`
 
 ### 2. Reproduce the published baseline in our environment
 
@@ -79,6 +100,11 @@ Purpose:
 
 - establish the real local comparison anchor before changing the model
 - verify logging, artifact capture, and size accounting
+
+Important stage note:
+
+- this remains the first honest comparison anchor before any claim of "beats baseline"
+- it is no longer the required first runtime action in the idea-testing stage
 
 Pinned command shape:
 
@@ -159,4 +185,4 @@ For every run, record the following in one place:
 
 ## Current Blocker
 
-There is still no honest performance claim beyond the public baseline because the remote substrate is not staged yet. The old single-job queue-wall note is no longer current, but the replacement blocker is still real: the node currently has only `2 / 8` GPUs free, and there is still no ready checkout or SP1024 data surface for Murphy under `/data/scratch`. The next executable step, once the substrate is materialized and the full `8`-GPU window is real, is baseline reproduction first, not model editing first.
+There is still no honest performance claim beyond the public baseline because no Murphy-run baseline has finished yet. But there is no longer a blocker to architecture idea-testing: the checkout, cache routing, dataset, tokenizer, and lean `1`-GPU run surface all work, and `1993` already produced the first cheap anchor. The remaining blocker applies only to challenge-honest comparison, not to the next coding step: before claiming an actual baseline improvement, the project still needs a Murphy-run `8`-GPU anchor, but before that the next executable move is a real architecture change under the lean `1`-GPU envelope.
